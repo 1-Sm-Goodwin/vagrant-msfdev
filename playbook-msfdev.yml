@@ -19,11 +19,15 @@
 
   - name: Updates server apt
     apt: update_cache=yes
+    tags:
+      - upgrade
 
   - name: Upgrade server apt
     apt: upgrade=full
     environment:
        DEBIAN_FRONTEND: noninteractive
+    tags:
+      - upgrade
 
   - apt: name={{ item }} state=latest
     with_items:
@@ -103,6 +107,8 @@
     action: file path=/home/msfdev/.ssh state=directory owner=msfdev
   - template: src=files/ssh_config dest=/home/msfdev/.ssh/config
 
-
+  - name: create dir for Git checkouts
+    action: file path=/home/msfdev/git state=directory owner=msfdev
+    
 #  handlers:
 #    - include: handlers/restarts.yml
