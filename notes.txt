@@ -1,0 +1,4 @@
+
+Built on the instructions from rapid7
+
+https://github.com/rapid7/metasploit-framework/wiki/Setting-Up-a-Metasploit-Development-Environment

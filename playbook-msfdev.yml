@@ -1,0 +1,108 @@
+- hosts: all
+  sudo: yes
+  serial: 4
+
+  tasks:
+#  - apt_repository: repo='ppa:bladerf/bladerf'
+#  - apt_key: url=http://keyserver.ubuntu.com:11371/pks/lookup?op=get&search=0xBE99746B2FB21B35 state=present
+
+#  - copy: dest=/etc/apt/sources.list
+#      content='deb http://http.kali.org/kali kali main non-free contrib\ndeb-src http://http.kali.org/kali kali main non-free contrib\ndeb http://security.kali.org/kali-security kali/updates main contrib non-free\n'
+
+#apt-get clean &&
+#rm -rf /var/lib/apt/lists;
+
+#apt-get update &&
+#apt-get -y --force-yes install kali-archive-keyring &&
+#apt-get update &&
+#apt-get -y upgrade
+
+  - name: Updates server apt
+    apt: update_cache=yes
+
+  - name: Upgrade server apt
+    apt: upgrade=full
+    environment:
+       DEBIAN_FRONTEND: noninteractive
+
+  - apt: name={{ item }} state=latest
+    with_items:
+        - build-essential
+        - zlib1g
+        - zlib1g-dev
+        - libxml2
+        - libxml2-dev
+        - libxslt-dev
+        - locate
+        - libreadline6-dev
+        - libcurl4-openssl-dev
+        - git-core
+        - libssl-dev
+        - libyaml-dev
+        - openssl
+        - autoconf
+        - libtool
+        - ncurses-dev
+        - bison
+        - curl
+        - wget
+        - xsel
+        - postgresql
+        - postgresql-contrib
+        - libpq-dev
+        - libapr1
+        - libaprutil1
+        - libsvn1
+        - libpcap-dev
+        - libsqlite3-dev
+        - ufw
+        - python-psycopg2
+        - vim-gnome
+
+  - service: name=ssh state=started enabled=yes
+
+  - name: Allow SSH
+    ufw: rule=allow interface=eth0 direction=in proto=tcp to_port=22
+  - name: Allow default reverse shells
+    ufw: rule=allow interface=eth0 direction=in proto=tcp to_port=4444:4464
+  - name: Allow for browser exploits
+    ufw: rule=allow interface=eth0 direction=in proto=tcp to_port=8080:8090
+
+  - name: enable UFW
+    ufw: state=enabled
+
+
+
+  - user:
+     name=msfdev
+     comment=""
+     groups=sudo
+     append=yes
+     shell=/bin/bash
+#     password=''
+
+
+# database setup
+  # http://docs.ansible.com/postgresql_db_module.html
+  - service: name=postgresql state=started enabled=yes
+
+#  - postgresql_user: name=msfdev
+
+  # Create a new database with name "acme"
+#  - postgresql_db: name=msf_dev_db owner=msfdev
+#  - postgresql_db: name=msf_test_db owner=msfdev
+  # http://docs.ansible.com/postgresql_user_module.html
+
+  - name: create dir for msf database config
+    action: file path=/home/msfdev/.msf4 state=directory owner=msfdev
+  - template: src=files/database.yml.j2 dest=/home/msfdev/.msf4/database.yml
+
+
+# git
+  - name: create dir for SSH client config
+    action: file path=/home/msfdev/.ssh state=directory owner=msfdev
+  - template: src=files/ssh_config dest=/home/msfdev/.ssh/config
+
+
+#  handlers:
+#    - include: handlers/restarts.yml
