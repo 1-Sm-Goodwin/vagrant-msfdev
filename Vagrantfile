@@ -16,6 +16,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     boxes.each do |opts|
         config.vm.define opts[:name] do |config|
 
+            # If true, then any SSH connections made will enable agent forwarding.
+            # Default value: false
+            # config.ssh.forward_agent = true
+
             # My VMware box, wont upload it
             config.vm.box       = "kramse/ubuntu-14.04-64"
             # insert some other box, we should make Kali Vagrant boxes
